@@ -6,14 +6,37 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
+  Animated,
 } from "react-native";
 import { useState, useEffect } from "react";
 import { Audio } from "expo-av";
+
+const typeColors = {
+  grass: "#22c55e",
+  fire: "#ef4444",
+  water: "#3b82f6",
+  electric: "#facc15",
+  psychic: "#a855f7",
+  ice: "#67e8f9",
+  dragon: "#7c3aed",
+  dark: "#111827",
+  fairy: "#f472b6",
+  normal: "#a8a29e",
+  fighting: "#b91c1c",
+  flying: "#60a5fa",
+  poison: "#9333ea",
+  ground: "#92400e",
+  rock: "#78716c",
+  bug: "#84cc16",
+  ghost: "#6d28d9",
+  steel: "#6b7280",
+};
 
 export default function App() {
   const [pokemon, setPokemon] = useState(null);
   const [id, setId] = useState(1);
   const [search, setSearch] = useState("");
+  const [anim] = useState(new Animated.Value(0));
 
   const getRegion = (gen) => {
     const map = {
@@ -48,6 +71,8 @@ export default function App() {
         id: data.id,
         nome: data.name.toUpperCase(),
         imagem: data.sprites.front_default,
+        gif: data.sprites.versions["generation-v"]["black-white"].animated
+          .front_default,
         tipo1: data.types[0]?.type.name,
         tipo2: data.types[1]?.type.name,
         geracao: species.generation.name
@@ -76,9 +101,34 @@ export default function App() {
         uri: `https://play.pokemonshowdown.com/audio/cries/${pokemon.nome.toLowerCase()}.mp3`,
       });
       await sound.playAsync();
-    } catch (error) {
-      console.log("Erro ao tocar som");
+    } catch {
+      console.log("Erro no som");
     }
+  };
+
+  const attackAnimation = () => {
+    Animated.sequence([
+      Animated.timing(anim, {
+        toValue: 20,
+        duration: 80,
+        useNativeDriver: true,
+      }),
+      Animated.timing(anim, {
+        toValue: -20,
+        duration: 80,
+        useNativeDriver: true,
+      }),
+      Animated.timing(anim, {
+        toValue: 15,
+        duration: 80,
+        useNativeDriver: true,
+      }),
+      Animated.timing(anim, {
+        toValue: 0,
+        duration: 80,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   const nextPokemon = () => {
@@ -107,26 +157,22 @@ export default function App() {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      {/* TOPO */}
-      <View style={styles.topBar}>
-        <View style={styles.blueLight} />
-        <View style={styles.smallLights}>
-          <View style={[styles.light, { backgroundColor: "#ef4444" }]} />
-          <View style={[styles.light, { backgroundColor: "#eab308" }]} />
-          <View style={[styles.light, { backgroundColor: "#22c55e" }]} />
-        </View>
-      </View>
+  const mainColor = pokemon
+    ? typeColors[pokemon.tipo1] || "#dc2626"
+    : "#dc2626";
 
-      {/* VISOR */}
+  return (
+    <View style={[styles.container, { backgroundColor: mainColor }]}>
       <View style={styles.screen}>
         {pokemon && (
           <>
             <Text style={styles.name}>{pokemon.nome}</Text>
 
             <View style={styles.imageContainer}>
-              <Image source={{ uri: pokemon.imagem }} style={styles.image} />
+              <Animated.Image
+                source={{ uri: pokemon.gif || pokemon.imagem }}
+                style={[styles.image, { transform: [{ translateX: anim }] }]}
+              />
             </View>
 
             <View style={styles.infoBox}>
@@ -134,8 +180,7 @@ export default function App() {
 
               <Text style={styles.infoLine}>
                 <Text style={styles.label}>TIPO: </Text>
-                {pokemon.tipo1.toUpperCase()}{" "}
-                {pokemon.tipo2 ? `/ ${pokemon.tipo2.toUpperCase()}` : ""}
+                {pokemon.tipo1.toUpperCase()}
               </Text>
 
               <Text style={styles.infoLine}>
@@ -157,12 +202,14 @@ export default function App() {
         )}
       </View>
 
-      {/* SOM */}
       <TouchableOpacity style={styles.soundButton} onPress={playSound}>
         <Text style={styles.buttonText}>🔊 Som</Text>
       </TouchableOpacity>
 
-      {/* BUSCA */}
+      <TouchableOpacity style={styles.attackButton} onPress={attackAnimation}>
+        <Text style={styles.buttonText}>⚔️ Atacar</Text>
+      </TouchableOpacity>
+
       <TextInput
         style={styles.input}
         placeholder="Nome ou ID..."
@@ -175,7 +222,6 @@ export default function App() {
         <Text style={styles.buttonText}>Buscar</Text>
       </TouchableOpacity>
 
-      {/* BOTÕES */}
       <View style={styles.buttons}>
         <TouchableOpacity style={styles.button} onPress={prevPokemon}>
           <Text style={styles.buttonText}>◀</Text>
@@ -198,37 +244,9 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#dc2626",
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
-  },
-
-  topBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 15,
-  },
-
-  blueLight: {
-    width: 50,
-    height: 50,
-    backgroundColor: "#3b82f6",
-    borderRadius: 25,
-    borderWidth: 4,
-    borderColor: "#1e3a8a",
-    marginRight: 10,
-  },
-
-  smallLights: {
-    flexDirection: "row",
-  },
-
-  light: {
-    width: 15,
-    height: 15,
-    borderRadius: 10,
-    marginHorizontal: 3,
   },
 
   screen: {
@@ -237,24 +255,18 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 20,
     alignItems: "center",
-    borderWidth: 5,
-    borderColor: "#991b1b",
     marginBottom: 15,
   },
 
   name: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#111",
-    letterSpacing: 2,
   },
 
   imageContainer: {
     backgroundColor: "#cbd5f5",
     padding: 10,
     borderRadius: 10,
-    borderWidth: 2,
-    borderColor: "#64748b",
     marginVertical: 10,
   },
 
@@ -272,21 +284,15 @@ const styles = StyleSheet.create({
   },
 
   id: {
-    fontSize: 16,
     fontWeight: "bold",
-    color: "#0f172a",
-    marginBottom: 5,
   },
 
   infoLine: {
-    fontSize: 14,
-    color: "#020617",
     marginVertical: 2,
   },
 
   label: {
     fontWeight: "bold",
-    color: "#1e293b",
   },
 
   input: {
@@ -302,11 +308,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#2563eb",
     padding: 10,
     borderRadius: 10,
-    marginBottom: 15,
+    marginBottom: 10,
   },
 
   soundButton: {
     backgroundColor: "#16a34a",
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+
+  attackButton: {
+    backgroundColor: "#f97316",
     padding: 10,
     borderRadius: 10,
     marginBottom: 10,
