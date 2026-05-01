@@ -20,19 +20,29 @@ const typeColors = {
   ice: "#67e8f9",
   dragon: "#7c3aed",
   dark: "#111827",
-  fairy: "#f472b6",
-  normal: "#a8a29e",
-  fighting: "#b91c1c",
-  flying: "#60a5fa",
-  poison: "#9333ea",
-  ground: "#92400e",
-  rock: "#78716c",
-  bug: "#84cc16",
-  ghost: "#6d28d9",
-  steel: "#6b7280",
 };
 
 export default function App() {
+  const [screen, setScreen] = useState("pokedex");
+  const [selectedPokemon, setSelectedPokemon] = useState(null);
+
+  return screen === "pokedex" ? (
+    <PokedexScreen
+      goBattle={(poke) => {
+        setSelectedPokemon(poke);
+        setScreen("battle");
+      }}
+    />
+  ) : (
+    <BattleScreen
+      goBack={() => setScreen("pokedex")}
+      playerPokemon={selectedPokemon}
+    />
+  );
+}
+
+
+function PokedexScreen({ goBattle }) {
   const [pokemon, setPokemon] = useState(null);
   const [id, setId] = useState(1);
   const [search, setSearch] = useState("");
@@ -67,7 +77,11 @@ export default function App() {
       if (species.is_legendary) categoria = "Lendário";
       if (species.is_mythical) categoria = "Mítico";
 
-      const poke = {
+      const descricao = species.flavor_text_entries
+        .find((e) => e.language.name === "en")
+        ?.flavor_text.replace(/\f/g, " ");
+
+      setPokemon({
         id: data.id,
         nome: data.name.toUpperCase(),
         imagem: data.sprites.front_default,
@@ -80,13 +94,11 @@ export default function App() {
           .toUpperCase(),
         regiao: getRegion(species.generation.name),
         categoria: categoria,
-      };
+        descricao: descricao,
+      });
 
-      setPokemon(poke);
       setId(data.id);
-    } catch (error) {
-      console.log("Erro ao buscar Pokémon");
-    }
+    } catch {}
   };
 
   useEffect(() => {
@@ -95,15 +107,12 @@ export default function App() {
 
   const playSound = async () => {
     if (!pokemon) return;
-
     try {
       const { sound } = await Audio.Sound.createAsync({
         uri: `https://play.pokemonshowdown.com/audio/cries/${pokemon.nome.toLowerCase()}.mp3`,
       });
       await sound.playAsync();
-    } catch {
-      console.log("Erro no som");
-    }
+    } catch {}
   };
 
   const attackAnimation = () => {
@@ -119,42 +128,11 @@ export default function App() {
         useNativeDriver: true,
       }),
       Animated.timing(anim, {
-        toValue: 15,
-        duration: 80,
-        useNativeDriver: true,
-      }),
-      Animated.timing(anim, {
         toValue: 0,
         duration: 80,
         useNativeDriver: true,
       }),
     ]).start();
-  };
-
-  const nextPokemon = () => {
-    const newId = id + 1;
-    setId(newId);
-    fetchPokemon(newId);
-  };
-
-  const prevPokemon = () => {
-    if (id > 1) {
-      const newId = id - 1;
-      setId(newId);
-      fetchPokemon(newId);
-    }
-  };
-
-  const goToStart = () => {
-    setId(1);
-    fetchPokemon(1);
-  };
-
-  const searchPokemon = () => {
-    if (search.trim() !== "") {
-      fetchPokemon(search.toLowerCase());
-      setSearch("");
-    }
   };
 
   const mainColor = pokemon
@@ -163,83 +141,137 @@ export default function App() {
 
   return (
     <View style={[styles.container, { backgroundColor: mainColor }]}>
-      <View style={styles.screen}>
-        {pokemon && (
-          <>
-            <Text style={styles.name}>{pokemon.nome}</Text>
+      {pokemon && (
+        <>
+          <Text style={styles.name}>{pokemon.nome}</Text>
 
-            <View style={styles.imageContainer}>
-              <Animated.Image
-                source={{ uri: pokemon.gif || pokemon.imagem }}
-                style={[styles.image, { transform: [{ translateX: anim }] }]}
-              />
-            </View>
+          <Animated.Image
+            source={{ uri: pokemon.gif || pokemon.imagem }}
+            style={[styles.image, { transform: [{ translateX: anim }] }]}
+          />
 
-            <View style={styles.infoBox}>
-              <Text style={styles.id}>#{pokemon.id}</Text>
+          <Text style={styles.info}>#{pokemon.id}</Text>
+          <Text style={styles.info}>Tipo: {pokemon.tipo1}</Text>
+          <Text style={styles.info}>Geração: {pokemon.geracao}</Text>
+          <Text style={styles.info}>Região: {pokemon.regiao}</Text>
+          <Text style={styles.info}>Categoria: {pokemon.categoria}</Text>
 
-              <Text style={styles.infoLine}>
-                <Text style={styles.label}>TIPO: </Text>
-                {pokemon.tipo1.toUpperCase()}
-              </Text>
+          <Text style={styles.description}>{pokemon.descricao}</Text>
 
-              <Text style={styles.infoLine}>
-                <Text style={styles.label}>GERAÇÃO: </Text>
-                {pokemon.geracao}
-              </Text>
+          <TouchableOpacity style={styles.soundButton} onPress={playSound}>
+            <Text style={styles.buttonText}>🔊 Som</Text>
+          </TouchableOpacity>
 
-              <Text style={styles.infoLine}>
-                <Text style={styles.label}>REGIÃO: </Text>
-                {pokemon.regiao}
-              </Text>
+          <TouchableOpacity
+            style={styles.attackButton}
+            onPress={attackAnimation}
+          >
+            <Text style={styles.buttonText}>⚔️ Atacar</Text>
+          </TouchableOpacity>
 
-              <Text style={styles.infoLine}>
-                <Text style={styles.label}>CATEGORIA: </Text>
-                {pokemon.categoria}
-              </Text>
-            </View>
-          </>
-        )}
-      </View>
-
-      <TouchableOpacity style={styles.soundButton} onPress={playSound}>
-        <Text style={styles.buttonText}>🔊 Som</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.attackButton} onPress={attackAnimation}>
-        <Text style={styles.buttonText}>⚔️ Atacar</Text>
-      </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.battleButton}
+            onPress={() => goBattle(pokemon)}
+          >
+            <Text style={styles.buttonText}>⚔️ Ir pra batalha</Text>
+          </TouchableOpacity>
+        </>
+      )}
 
       <TextInput
         style={styles.input}
-        placeholder="Nome ou ID..."
+        placeholder="Buscar..."
         placeholderTextColor="#ccc"
         value={search}
         onChangeText={setSearch}
       />
 
-      <TouchableOpacity style={styles.searchButton} onPress={searchPokemon}>
+      <TouchableOpacity
+        onPress={() => fetchPokemon(search.toLowerCase())}
+        style={styles.button}
+      >
         <Text style={styles.buttonText}>Buscar</Text>
-      </TouchableOpacity>
-
-      <View style={styles.buttons}>
-        <TouchableOpacity style={styles.button} onPress={prevPokemon}>
-          <Text style={styles.buttonText}>◀</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.button} onPress={nextPokemon}>
-          <Text style={styles.buttonText}>▶</Text>
-        </TouchableOpacity>
-      </View>
-
-      <TouchableOpacity style={styles.resetButton} onPress={goToStart}>
-        <Text style={styles.buttonText}>Reset</Text>
       </TouchableOpacity>
 
       <StatusBar style="light" />
     </View>
   );
 }
+
+
+
+function BattleScreen({ goBack, playerPokemon }) {
+  const [enemy, setEnemy] = useState(null);
+  const [playerHP, setPlayerHP] = useState(100);
+  const [enemyHP, setEnemyHP] = useState(100);
+  const [log, setLog] = useState("");
+
+  useEffect(() => {
+    const getEnemy = async () => {
+      const id = Math.floor(Math.random() * 151) + 1;
+      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+      const data = await res.json();
+
+      setEnemy({
+        nome: data.name.toUpperCase(),
+        gif: data.sprites.versions["generation-v"]["black-white"].animated
+          .front_default,
+      });
+    };
+
+    getEnemy();
+  }, []);
+
+  const attack = () => {
+    if (playerHP <= 0 || enemyHP <= 0) return;
+
+    const dmg = Math.floor(Math.random() * 20) + 5;
+    const enemyDmg = Math.floor(Math.random() * 20) + 5;
+
+    const newEnemyHP = Math.max(enemyHP - dmg, 0);
+    const newPlayerHP = Math.max(playerHP - enemyDmg, 0);
+
+    setEnemyHP(newEnemyHP);
+    setPlayerHP(newPlayerHP);
+
+    if (newEnemyHP === 0) setLog("Você venceu!");
+    else if (newPlayerHP === 0) setLog("Você perdeu!");
+    else setLog(`Você causou ${dmg} e recebeu ${enemyDmg}`);
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>⚔️ BATALHA</Text>
+
+      <View style={styles.battleRow}>
+        <View style={styles.pokemonBox}>
+          <Text>{playerPokemon.nome}</Text>
+          <Image source={{ uri: playerPokemon.gif }} style={styles.image} />
+          <Text>HP: {playerHP}</Text>
+        </View>
+
+        {enemy && (
+          <View style={styles.pokemonBox}>
+            <Text>{enemy.nome}</Text>
+            <Image source={{ uri: enemy.gif }} style={styles.image} />
+            <Text>HP: {enemyHP}</Text>
+          </View>
+        )}
+      </View>
+
+      <Text style={{ margin: 10 }}>{log}</Text>
+
+      <TouchableOpacity style={styles.attackButton} onPress={attack}>
+        <Text style={styles.buttonText}>⚔️ Atacar</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={goBack}>
+        <Text style={styles.buttonText}>⬅ Voltar</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 
 const styles = StyleSheet.create({
   container: {
@@ -249,50 +281,31 @@ const styles = StyleSheet.create({
     padding: 20,
   },
 
-  screen: {
-    width: "100%",
-    backgroundColor: "#e5e7eb",
-    borderRadius: 10,
-    padding: 20,
-    alignItems: "center",
-    marginBottom: 15,
+  title: {
+    fontSize: 22,
+    color: "#fff",
   },
 
   name: {
     fontSize: 24,
-    fontWeight: "bold",
-  },
-
-  imageContainer: {
-    backgroundColor: "#cbd5f5",
-    padding: 10,
-    borderRadius: 10,
-    marginVertical: 10,
+    color: "#fff",
   },
 
   image: {
     width: 120,
     height: 120,
+    marginVertical: 10,
   },
 
-  infoBox: {
-    width: "100%",
-    backgroundColor: "#94a3b8",
-    padding: 10,
-    borderRadius: 8,
+  info: {
+    color: "#fff",
+  },
+
+  description: {
     marginTop: 10,
-  },
-
-  id: {
-    fontWeight: "bold",
-  },
-
-  infoLine: {
-    marginVertical: 2,
-  },
-
-  label: {
-    fontWeight: "bold",
+    fontSize: 12,
+    color: "#fff",
+    textAlign: "center",
   },
 
   input: {
@@ -301,50 +314,49 @@ const styles = StyleSheet.create({
     width: "100%",
     padding: 10,
     borderRadius: 10,
-    marginBottom: 10,
+    marginTop: 20,
   },
 
-  searchButton: {
-    backgroundColor: "#2563eb",
+  button: {
+    backgroundColor: "#374151",
     padding: 10,
+    marginTop: 10,
     borderRadius: 10,
-    marginBottom: 10,
   },
 
   soundButton: {
     backgroundColor: "#16a34a",
     padding: 10,
+    marginTop: 10,
     borderRadius: 10,
-    marginBottom: 10,
   },
 
   attackButton: {
     backgroundColor: "#f97316",
     padding: 10,
+    marginTop: 10,
     borderRadius: 10,
-    marginBottom: 10,
   },
 
-  buttons: {
-    flexDirection: "row",
-  },
-
-  button: {
-    backgroundColor: "#111827",
-    padding: 15,
-    marginHorizontal: 10,
-    borderRadius: 50,
-  },
-
-  resetButton: {
-    backgroundColor: "#000",
-    padding: 10,
-    marginTop: 15,
+  battleButton: {
+    backgroundColor: "#ef4444",
+    padding: 12,
+    marginTop: 10,
     borderRadius: 10,
   },
 
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+
+  battleRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+  },
+
+  pokemonBox: {
+    alignItems: "center",
   },
 });
