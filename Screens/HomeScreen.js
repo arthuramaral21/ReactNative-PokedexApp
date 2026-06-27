@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
-  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,6 +12,7 @@ import {
 } from "react-native";
 
 import { Audio } from "expo-av";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const typeColors = {
   normal: "#a8a29e",
@@ -186,171 +186,330 @@ export default function HomeScreen({ navigation }) {
     : "#dc2626";
 
   return (
-    <ScrollView
-      contentContainerStyle={[styles.container, { backgroundColor: mainColor }]}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Text style={styles.title}>POKÉDEX</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[styles.hero, { backgroundColor: mainColor }]}>
+          <View>
+            <Text style={styles.eyebrow}>Pokedex App</Text>
+            <Text style={styles.title}>Pokédex</Text>
+          </View>
 
-      {loading && <ActivityIndicator color="#fff" size="large" />}
-
-      {pokemon && (
-        <View style={styles.card}>
-          <Text style={styles.name}>{pokemon.nome}</Text>
-
-          <TouchableOpacity activeOpacity={0.8} onPress={animatePokemon}>
-            <Animated.Image
-              source={{ uri: pokemon.gif || pokemon.imagem }}
-              style={[styles.image, { transform: [{ translateX: anim }] }]}
-            />
-          </TouchableOpacity>
-
-          <Text style={styles.info}>#{pokemon.id}</Text>
-          <Text style={styles.info}>
-            Tipo: {pokemon.tipo1}
-            {pokemon.tipo2 ? ` / ${pokemon.tipo2}` : ""}
-          </Text>
-          <Text style={styles.info}>Geração: {pokemon.geracao}</Text>
-          <Text style={styles.info}>Região: {pokemon.regiao}</Text>
-          <Text style={styles.info}>Categoria: {pokemon.categoria}</Text>
-
-          <Text style={styles.description}>{pokemon.descricao}</Text>
-
-          <TouchableOpacity style={styles.soundButton} onPress={playSound}>
-            <Text style={styles.buttonText}>Som do Pokémon</Text>
+          <TouchableOpacity
+            style={styles.collectionButton}
+            onPress={() => navigation.navigate("Lista")}
+          >
+            <Text style={styles.collectionButtonText}>Coleção</Text>
           </TouchableOpacity>
         </View>
-      )}
 
-      <View style={styles.searchArea}>
-        <TextInput
-          style={styles.input}
-          placeholder="Buscar por nome ou ID"
-          placeholderTextColor="#cbd5e1"
-          value={search}
-          onChangeText={setSearch}
-          autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="search"
-          onSubmitEditing={() => fetchPokemon(search)}
-        />
+        <View style={styles.searchArea}>
+          <TextInput
+            style={styles.input}
+            placeholder="Nome ou ID do Pokémon"
+            placeholderTextColor="#94a3b8"
+            value={search}
+            onChangeText={setSearch}
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="search"
+            onSubmitEditing={() => fetchPokemon(search)}
+          />
 
-        <TouchableOpacity
-          onPress={() => fetchPokemon(search)}
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>Buscar</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            onPress={() => fetchPokemon(search)}
+            style={styles.searchButton}
+          >
+            <Text style={styles.buttonText}>Buscar</Text>
+          </TouchableOpacity>
+        </View>
 
-      <TouchableOpacity
-        style={[styles.button, styles.primaryButton]}
-        onPress={goToCadastro}
-      >
-        <Text style={styles.buttonText}>Cadastrar Pokémon</Text>
-      </TouchableOpacity>
+        {loading && (
+          <View style={styles.loadingCard}>
+            <ActivityIndicator color={mainColor} size="large" />
+            <Text style={styles.loadingText}>Carregando Pokémon...</Text>
+          </View>
+        )}
 
-      <TouchableOpacity
-        style={[styles.button, styles.secondaryButton]}
-        onPress={() => navigation.navigate("Lista")}
-      >
-        <Text style={styles.buttonText}>Minha Coleção</Text>
-      </TouchableOpacity>
+        {pokemon && (
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View>
+                <Text style={styles.name}>{pokemon.nome}</Text>
+                <Text style={styles.number}>#{pokemon.id}</Text>
+              </View>
 
-      {!!errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
+              <View style={[styles.typeBadge, { backgroundColor: mainColor }]}>
+                <Text style={styles.typeText}>{pokemon.tipo1}</Text>
+              </View>
+            </View>
 
-      <StatusBar style="light" />
-    </ScrollView>
+            <TouchableOpacity activeOpacity={0.85} onPress={animatePokemon}>
+              <View style={styles.imageFrame}>
+                <Animated.Image
+                  source={{ uri: pokemon.gif || pokemon.imagem }}
+                  style={[styles.image, { transform: [{ translateX: anim }] }]}
+                  resizeMode="contain"
+                />
+              </View>
+            </TouchableOpacity>
+
+            <View style={styles.infoGrid}>
+              <View style={styles.infoBox}>
+                <Text style={styles.infoLabel}>Geração</Text>
+                <Text style={styles.infoValue}>{pokemon.geracao}</Text>
+              </View>
+
+              <View style={styles.infoBox}>
+                <Text style={styles.infoLabel}>Região</Text>
+                <Text style={styles.infoValue}>{pokemon.regiao}</Text>
+              </View>
+
+              <View style={styles.infoBox}>
+                <Text style={styles.infoLabel}>Categoria</Text>
+                <Text style={styles.infoValue}>{pokemon.categoria}</Text>
+              </View>
+
+              <View style={styles.infoBox}>
+                <Text style={styles.infoLabel}>Tipo 2</Text>
+                <Text style={styles.infoValue}>{pokemon.tipo2 || "Nenhum"}</Text>
+              </View>
+            </View>
+
+            <Text style={styles.description}>{pokemon.descricao}</Text>
+
+            <View style={styles.actions}>
+              <TouchableOpacity style={styles.soundButton} onPress={playSound}>
+                <Text style={styles.buttonText}>Som</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.primaryButton, { backgroundColor: mainColor }]}
+                onPress={goToCadastro}
+              >
+                <Text style={styles.buttonText}>Cadastrar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {!!errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
+
+        <StatusBar style="dark" />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    backgroundColor: "#f8fafc",
+    flex: 1,
+  },
+
   container: {
     flexGrow: 1,
-    justifyContent: "center",
+    padding: 18,
+    paddingBottom: 28,
+  },
+
+  hero: {
     alignItems: "center",
-    padding: 20,
+    borderRadius: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
+    padding: 18,
+  },
+
+  eyebrow: {
+    color: "rgba(255,255,255,0.78)",
+    fontSize: 13,
+    fontWeight: "700",
+    textTransform: "uppercase",
   },
 
   title: {
     color: "#fff",
-    fontSize: 32,
-    fontWeight: "bold",
-    marginBottom: 20,
+    fontSize: 34,
+    fontWeight: "900",
   },
 
-  card: {
-    alignItems: "center",
+  collectionButton: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderColor: "rgba(255,255,255,0.35)",
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+
+  collectionButtonText: {
+    color: "#fff",
+    fontWeight: "800",
+  },
+
+  searchArea: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 16,
     width: "100%",
   },
 
+  input: {
+    backgroundColor: "#fff",
+    borderColor: "#e2e8f0",
+    borderRadius: 8,
+    borderWidth: 1,
+    color: "#111827",
+    flex: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+  },
+
+  searchButton: {
+    alignItems: "center",
+    backgroundColor: "#111827",
+    borderRadius: 8,
+    justifyContent: "center",
+    paddingHorizontal: 18,
+  },
+
+  loadingCard: {
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    elevation: 2,
+    padding: 18,
+    shadowColor: "#111827",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+  },
+
+  loadingText: {
+    color: "#475569",
+    fontWeight: "700",
+    marginTop: 8,
+  },
+
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    elevation: 3,
+    padding: 18,
+    shadowColor: "#111827",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    width: "100%",
+  },
+
+  cardHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
   name: {
-    color: "#fff",
+    color: "#111827",
     fontSize: 26,
-    fontWeight: "bold",
-    marginBottom: 4,
+    fontWeight: "900",
+  },
+
+  number: {
+    color: "#64748b",
+    fontSize: 15,
+    fontWeight: "800",
+    marginTop: 2,
+  },
+
+  typeBadge: {
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+
+  typeText: {
+    color: "#fff",
+    fontWeight: "900",
+    textTransform: "capitalize",
+  },
+
+  imageFrame: {
+    alignItems: "center",
+    backgroundColor: "#f1f5f9",
+    borderRadius: 8,
+    justifyContent: "center",
+    marginVertical: 18,
+    minHeight: 174,
   },
 
   image: {
-    width: 140,
-    height: 140,
-    marginVertical: 10,
+    height: 152,
+    width: 152,
   },
 
-  info: {
-    color: "#fff",
+  infoGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+
+  infoBox: {
+    backgroundColor: "#f8fafc",
+    borderColor: "#e2e8f0",
+    borderRadius: 8,
+    borderWidth: 1,
+    flexBasis: "48%",
+    flexGrow: 1,
+    padding: 12,
+  },
+
+  infoLabel: {
+    color: "#64748b",
+    fontSize: 12,
+    fontWeight: "800",
+    marginBottom: 4,
+    textTransform: "uppercase",
+  },
+
+  infoValue: {
+    color: "#111827",
     fontSize: 15,
-    marginTop: 4,
+    fontWeight: "800",
     textTransform: "capitalize",
   },
 
   description: {
-    color: "#fff",
+    color: "#334155",
     fontSize: 14,
-    lineHeight: 20,
-    marginTop: 12,
-    textAlign: "center",
+    lineHeight: 21,
+    marginTop: 16,
   },
 
-  searchArea: {
-    width: "100%",
-    marginTop: 24,
-  },
-
-  input: {
-    backgroundColor: "#1f2937",
-    borderRadius: 10,
-    color: "#fff",
-    padding: 12,
-    width: "100%",
-  },
-
-  button: {
-    alignItems: "center",
-    backgroundColor: "#374151",
-    borderRadius: 10,
-    marginTop: 10,
-    padding: 13,
-    width: "100%",
+  actions: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 16,
   },
 
   soundButton: {
     alignItems: "center",
-    backgroundColor: "#16a34a",
-    borderRadius: 10,
-    marginTop: 14,
-    padding: 12,
-    width: "100%",
+    backgroundColor: "#0f766e",
+    borderRadius: 8,
+    flex: 1,
+    padding: 14,
   },
 
   primaryButton: {
-    backgroundColor: "#dc2626",
-    marginTop: 16,
-  },
-
-  secondaryButton: {
-    backgroundColor: "#111827",
-    marginBottom: 10,
+    alignItems: "center",
+    borderRadius: 8,
+    flex: 1,
+    padding: 14,
   },
 
   buttonText: {
@@ -360,9 +519,14 @@ const styles = StyleSheet.create({
   },
 
   error: {
-    color: "#fff",
-    fontWeight: "bold",
-    marginTop: 8,
+    backgroundColor: "#fee2e2",
+    borderColor: "#fecaca",
+    borderRadius: 8,
+    borderWidth: 1,
+    color: "#991b1b",
+    fontWeight: "800",
+    marginTop: 12,
+    padding: 12,
     textAlign: "center",
   },
 });

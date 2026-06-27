@@ -9,6 +9,9 @@ import {
   View,
 } from "react-native";
 
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import PokemonCard from "../Components/PokemonCard";
 import {
   deletePokemon,
@@ -72,67 +75,129 @@ export default function ListaScreen({ navigation }) {
 
   if (loading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator color="#dc2626" size="large" />
-        <Text style={styles.loadingText}>Carregando coleção...</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.centerContainer}>
+          <ActivityIndicator color="#dc2626" size="large" />
+          <Text style={styles.loadingText}>Carregando coleção...</Text>
+        </View>
+        <StatusBar style="dark" />
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Minha Coleção</Text>
-
-      <FlatList
-        data={pokemons}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => (
-          <PokemonCard
-            pokemon={item}
-            onUpdate={handleUpdate}
-            onDelete={handleDelete}
-          />
-        )}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>Sua coleção está vazia</Text>
-            <Text style={styles.emptyText}>
-              Busque um Pokémon na Pokédex e cadastre para vê-lo aqui.
-            </Text>
-
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => navigation.navigate("Home")}
-            >
-              <Text style={styles.buttonText}>Ir para Pokédex</Text>
-            </TouchableOpacity>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.headerText}>
+            <Text style={styles.eyebrow}>Pokémons salvos</Text>
+            <Text style={styles.title}>Minha Coleção</Text>
           </View>
-        }
-      />
-    </View>
+
+          <View style={styles.counter}>
+            <Text style={styles.counterNumber}>{pokemons.length}</Text>
+            <Text style={styles.counterLabel}>total</Text>
+          </View>
+        </View>
+
+        <FlatList
+          data={pokemons}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <PokemonCard
+              pokemon={item}
+              onUpdate={handleUpdate}
+              onDelete={handleDelete}
+            />
+          )}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyTitle}>Sua coleção está vazia</Text>
+              <Text style={styles.emptyText}>
+                Busque um Pokémon na Pokédex e cadastre para vê-lo aqui.
+              </Text>
+
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => navigation.navigate("Home")}
+              >
+                <Text style={styles.buttonText}>Ir para Pokédex</Text>
+              </TouchableOpacity>
+            </View>
+          }
+        />
+      </View>
+      <StatusBar style="dark" />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#e2e8f0",
+  safeArea: {
+    backgroundColor: "#f8fafc",
     flex: 1,
-    padding: 16,
+  },
+
+  container: {
+    backgroundColor: "#f8fafc",
+    flex: 1,
+    padding: 18,
   },
 
   centerContainer: {
     alignItems: "center",
-    backgroundColor: "#e2e8f0",
+    backgroundColor: "#f8fafc",
     flex: 1,
     justifyContent: "center",
   },
 
+  header: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+
+  headerText: {
+    flex: 1,
+    paddingRight: 12,
+  },
+
+  eyebrow: {
+    color: "#dc2626",
+    fontSize: 13,
+    fontWeight: "900",
+    textTransform: "uppercase",
+  },
+
   title: {
     color: "#111827",
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 16,
+    fontSize: 30,
+    fontWeight: "900",
+  },
+
+  counter: {
+    alignItems: "center",
+    backgroundColor: "#111827",
+    borderRadius: 8,
+    minWidth: 62,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+
+  counterNumber: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "900",
+  },
+
+  counterLabel: {
+    color: "#cbd5e1",
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase",
   },
 
   listContent: {
@@ -142,20 +207,28 @@ const styles = StyleSheet.create({
 
   loadingText: {
     color: "#475569",
+    fontWeight: "700",
     marginTop: 10,
   },
 
   emptyContainer: {
     alignItems: "center",
-    flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    elevation: 2,
     justifyContent: "center",
-    paddingTop: 80,
+    marginTop: 40,
+    padding: 24,
+    shadowColor: "#111827",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
   },
 
   emptyTitle: {
     color: "#111827",
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: "900",
     marginBottom: 8,
   },
 

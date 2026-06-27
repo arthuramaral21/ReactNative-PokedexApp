@@ -3,12 +3,18 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { createPokemon } from "../Services/pokemonService";
 
@@ -39,92 +45,190 @@ export default function CadastroScreen({ route, navigation }) {
 
   if (!pokemon) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Nenhum Pokémon selecionado</Text>
-        <Text style={styles.description}>
-          Volte para a Pokédex, escolha um Pokémon e toque em cadastrar.
-        </Text>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.title}>Nenhum Pokémon selecionado</Text>
+          <Text style={styles.description}>
+            Volte para a Pokédex, escolha um Pokémon e toque em cadastrar.
+          </Text>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("Home")}
-        >
-          <Text style={styles.buttonText}>Voltar para Pokédex</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={() => navigation.navigate("Home")}
+          >
+            <Text style={styles.buttonText}>Voltar para Pokédex</Text>
+          </TouchableOpacity>
+        </View>
+        <StatusBar style="dark" />
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Cadastrar Pokémon</Text>
-
-      <Image
-        source={{ uri: pokemon.imagem }}
-        style={styles.image}
-        resizeMode="contain"
-      />
-
-      <Text style={styles.name}>{pokemon.nome}</Text>
-      <Text style={styles.info}>ID: #{pokemon.id}</Text>
-      <Text style={styles.info}>Tipo: {pokemon.tipo1}</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Apelido"
-        placeholderTextColor="#94a3b8"
-        value={apelido}
-        onChangeText={setApelido}
-      />
-
-      <TouchableOpacity
-        style={[styles.button, loading && styles.disabledButton]}
-        onPress={handleSave}
-        disabled={loading}
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.keyboardArea}
       >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Salvar</Text>
-        )}
-      </TouchableOpacity>
-    </View>
+        <ScrollView
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.header}>
+            <Text style={styles.eyebrow}>Nova captura</Text>
+            <Text style={styles.title}>Cadastrar Pokémon</Text>
+          </View>
+
+          <View style={styles.card}>
+            <View style={styles.imageFrame}>
+              <Image
+                source={{ uri: pokemon.imagem }}
+                style={styles.image}
+                resizeMode="contain"
+              />
+            </View>
+
+            <Text style={styles.name}>{pokemon.nome}</Text>
+
+            <View style={styles.metaRow}>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>#{pokemon.id}</Text>
+              </View>
+
+              <View style={[styles.badge, styles.typeBadge]}>
+                <Text style={[styles.badgeText, styles.typeText]}>
+                  {pokemon.tipo1}
+                </Text>
+              </View>
+            </View>
+
+            <Text style={styles.label}>Apelido</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ex: parceiro, campeão..."
+              placeholderTextColor="#94a3b8"
+              value={apelido}
+              onChangeText={setApelido}
+            />
+
+            <TouchableOpacity
+              style={[styles.primaryButton, loading && styles.disabledButton]}
+              onPress={handleSave}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Salvar na coleção</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          <StatusBar style="dark" />
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
+  safeArea: {
     backgroundColor: "#f8fafc",
     flex: 1,
+  },
+
+  keyboardArea: {
+    flex: 1,
+  },
+
+  container: {
+    flexGrow: 1,
     justifyContent: "center",
-    padding: 20,
+    padding: 18,
+  },
+
+  emptyContainer: {
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+    padding: 18,
+  },
+
+  header: {
+    marginBottom: 16,
+  },
+
+  eyebrow: {
+    color: "#dc2626",
+    fontSize: 13,
+    fontWeight: "900",
+    textTransform: "uppercase",
   },
 
   title: {
     color: "#111827",
-    fontSize: 26,
-    fontWeight: "bold",
-    marginBottom: 18,
-    textAlign: "center",
+    fontSize: 30,
+    fontWeight: "900",
+  },
+
+  card: {
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    elevation: 3,
+    padding: 18,
+    shadowColor: "#111827",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+  },
+
+  imageFrame: {
+    alignItems: "center",
+    backgroundColor: "#f1f5f9",
+    borderRadius: 8,
+    height: 176,
+    justifyContent: "center",
+    marginBottom: 14,
+    width: "100%",
   },
 
   image: {
     height: 150,
-    marginBottom: 10,
     width: 150,
   },
 
   name: {
     color: "#111827",
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: "900",
   },
 
-  info: {
-    color: "#475569",
-    fontSize: 16,
-    marginTop: 4,
+  metaRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 10,
+  },
+
+  badge: {
+    backgroundColor: "#fef3c7",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+
+  typeBadge: {
+    backgroundColor: "#e0f2fe",
+  },
+
+  badgeText: {
+    color: "#92400e",
+    fontWeight: "900",
+  },
+
+  typeText: {
+    color: "#075985",
     textTransform: "capitalize",
   },
 
@@ -136,23 +240,37 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
+  label: {
+    alignSelf: "flex-start",
+    color: "#334155",
+    fontSize: 14,
+    fontWeight: "800",
+    marginBottom: 8,
+    marginTop: 24,
+  },
+
   input: {
-    backgroundColor: "#fff",
+    backgroundColor: "#f8fafc",
     borderColor: "#cbd5e1",
     borderRadius: 8,
     borderWidth: 1,
     color: "#111827",
-    marginTop: 24,
+    marginTop: 0,
     padding: 14,
     width: "100%",
   },
 
-  button: {
+  primaryButton: {
     alignItems: "center",
     backgroundColor: "#dc2626",
     borderRadius: 8,
-    marginTop: 14,
+    elevation: 2,
+    marginTop: 16,
     padding: 14,
+    shadowColor: "#dc2626",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
     width: "100%",
   },
 

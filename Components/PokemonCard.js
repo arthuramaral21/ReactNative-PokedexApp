@@ -24,12 +24,25 @@ export default function PokemonCard({ pokemon, onUpdate, onDelete }) {
 
   return (
     <View style={styles.card}>
-      <Image source={{ uri: pokemon.imagem }} style={styles.image} />
+      <View style={styles.imageFrame}>
+        <Image
+          source={{ uri: pokemon.imagem }}
+          style={styles.image}
+          resizeMode="contain"
+        />
+      </View>
 
       <View style={styles.content}>
-        <Text style={styles.name}>{pokemon.nome}</Text>
-        <Text style={styles.info}>ID: #{pokemon.pokemonId}</Text>
-        <Text style={styles.info}>Tipo: {pokemon.tipo}</Text>
+        <View style={styles.header}>
+          <Text style={styles.name}>{pokemon.nome}</Text>
+          <Text style={styles.number}>#{pokemon.pokemonId}</Text>
+        </View>
+
+        <View style={styles.metaRow}>
+          <View style={styles.typeBadge}>
+            <Text style={styles.typeText}>{pokemon.tipo}</Text>
+          </View>
+        </View>
 
         {isEditing ? (
           <TextInput
@@ -79,85 +92,138 @@ export default function PokemonCard({ pokemon, onUpdate, onDelete }) {
 
 const styles = StyleSheet.create({
   card: {
-    alignItems: "center",
+    alignItems: "flex-start",
     backgroundColor: "#fff",
     borderRadius: 8,
+    elevation: 2,
     flexDirection: "row",
     marginBottom: 12,
     padding: 12,
+    shadowColor: "#111827",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
     width: "100%",
   },
 
-  image: {
-    height: 82,
+  imageFrame: {
+    alignItems: "center",
+    backgroundColor: "#f1f5f9",
+    borderRadius: 8,
+    height: 86,
+    justifyContent: "center",
     marginRight: 12,
-    width: 82,
+    width: 86,
+  },
+
+  image: {
+    height: 76,
+    width: 76,
   },
 
   content: {
     flex: 1,
   },
 
+  header: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
   name: {
     color: "#111827",
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "900",
+    flex: 1,
+    paddingRight: 8,
   },
 
-  info: {
-    color: "#475569",
+  number: {
+    color: "#64748b",
     fontSize: 14,
-    marginTop: 2,
+    fontWeight: "900",
+  },
+
+  metaRow: {
+    flexDirection: "row",
+    marginTop: 6,
+  },
+
+  typeBadge: {
+    backgroundColor: "#e0f2fe",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+
+  typeText: {
+    color: "#075985",
+    fontSize: 12,
+    fontWeight: "900",
     textTransform: "capitalize",
   },
 
   nickname: {
-    color: "#1f2937",
+    color: "#334155",
     fontSize: 15,
-    fontWeight: "600",
-    marginTop: 6,
+    fontWeight: "800",
+    marginTop: 8,
   },
 
   input: {
-    backgroundColor: "#f1f5f9",
+    backgroundColor: "#f8fafc",
     borderColor: "#cbd5e1",
     borderRadius: 8,
     borderWidth: 1,
     color: "#111827",
     marginTop: 8,
-    padding: 8,
+    padding: 10,
   },
 
   actions: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
     marginTop: 10,
   },
 
   editButton: {
-    backgroundColor: "#2563eb",
+    alignItems: "center",
+    backgroundColor: "#111827",
     borderRadius: 8,
+    flex: 1,
+    minWidth: 78,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
 
   deleteButton: {
+    alignItems: "center",
     backgroundColor: "#dc2626",
     borderRadius: 8,
+    flex: 1,
+    minWidth: 78,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
 
   saveButton: {
-    backgroundColor: "#16a34a",
+    alignItems: "center",
+    backgroundColor: "#0f766e",
     borderRadius: 8,
+    flex: 1,
+    minWidth: 78,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
 
   cancelButton: {
+    alignItems: "center",
     backgroundColor: "#64748b",
     borderRadius: 8,
+    flex: 1,
+    minWidth: 78,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
