@@ -2,7 +2,6 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import HomeScreen from "../Screens/HomeScreen";
-import BattleScreen from "../Screens/BattleScreen";
 import CadastroScreen from "../Screens/CadastroScreen";
 import ListaScreen from "../Screens/ListaScreen";
 
@@ -16,12 +15,6 @@ export default function AppNavigator() {
           name="Home"
           component={HomeScreen}
           options={{ title: "Pokédex" }}
-        />
-
-        <Stack.Screen
-          name="Battle"
-          component={BattleScreen}
-          options={{ title: "Batalha" }}
         />
 
         <Stack.Screen
