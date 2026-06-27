@@ -1,28 +1,70 @@
-import { NavigationContainer } from "@react-navigation/native";
+import {
+  DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
+} from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
 import HomeScreen from "../Screens/HomeScreen";
 import CadastroScreen from "../Screens/CadastroScreen";
 import ListaScreen from "../Screens/ListaScreen";
+import { useAppTheme } from "../Context/AppThemeContext";
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
+  const { colors, isDark, toggleTheme } = useAppTheme();
+
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      theme={{
+        ...(isDark ? DarkTheme : DefaultTheme),
+        dark: isDark,
+        colors: {
+          ...(isDark ? DarkTheme.colors : DefaultTheme.colors),
+          primary: "#dc2626",
+          background: colors.background,
+          card: colors.background,
+          text: colors.text,
+          border: colors.border,
+          notification: "#dc2626",
+        },
+        fonts: {},
+      }}
+    >
       <Stack.Navigator
         screenOptions={{
           headerStyle: {
-            backgroundColor: "#f8fafc",
+            backgroundColor: colors.background,
           },
           headerShadowVisible: false,
-          headerTintColor: "#111827",
+          headerTintColor: colors.text,
           headerTitleStyle: {
             fontWeight: "800",
           },
           contentStyle: {
-            backgroundColor: "#f8fafc",
+            backgroundColor: colors.background,
           },
+          headerRight: () => (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={toggleTheme}
+              style={[
+                styles.themeButton,
+                { backgroundColor: colors.navButton },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.themeButtonText,
+                  { color: colors.navButtonText },
+                ]}
+              >
+                {isDark ? "Claro" : "Noite"}
+              </Text>
+            </TouchableOpacity>
+          ),
         }}
       >
         <Stack.Screen
@@ -46,3 +88,16 @@ export default function AppNavigator() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  themeButton: {
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+
+  themeButtonText: {
+    fontSize: 12,
+    fontWeight: "900",
+  },
+});

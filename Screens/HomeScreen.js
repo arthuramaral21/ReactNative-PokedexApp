@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,6 +15,8 @@ import {
 
 import { Audio } from "expo-av";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import { useAppTheme } from "../Context/AppThemeContext";
 
 const typeColors = {
   normal: "#a8a29e",
@@ -36,6 +40,7 @@ const typeColors = {
 };
 
 export default function HomeScreen({ navigation }) {
+  const { colors, isDark } = useAppTheme();
   const [pokemon, setPokemon] = useState(null);
   const [id, setId] = useState(1);
   const [search, setSearch] = useState("");
@@ -186,127 +191,231 @@ export default function HomeScreen({ navigation }) {
     : "#dc2626";
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={90}
+        style={styles.keyboardArea}
       >
-        <View style={[styles.hero, { backgroundColor: mainColor }]}>
-          <View>
-            <Text style={styles.eyebrow}>Pokedex App</Text>
-            <Text style={styles.title}>Pokédex</Text>
-          </View>
-
-          <TouchableOpacity
-            style={styles.collectionButton}
-            onPress={() => navigation.navigate("Lista")}
-          >
-            <Text style={styles.collectionButtonText}>Coleção</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.searchArea}>
-          <TextInput
-            style={styles.input}
-            placeholder="Nome ou ID do Pokémon"
-            placeholderTextColor="#94a3b8"
-            value={search}
-            onChangeText={setSearch}
-            autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="search"
-            onSubmitEditing={() => fetchPokemon(search)}
-          />
-
-          <TouchableOpacity
-            onPress={() => fetchPokemon(search)}
-            style={styles.searchButton}
-          >
-            <Text style={styles.buttonText}>Buscar</Text>
-          </TouchableOpacity>
-        </View>
-
-        {loading && (
-          <View style={styles.loadingCard}>
-            <ActivityIndicator color={mainColor} size="large" />
-            <Text style={styles.loadingText}>Carregando Pokémon...</Text>
-          </View>
-        )}
-
-        {pokemon && (
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <View>
-                <Text style={styles.name}>{pokemon.nome}</Text>
-                <Text style={styles.number}>#{pokemon.id}</Text>
-              </View>
-
-              <View style={[styles.typeBadge, { backgroundColor: mainColor }]}>
-                <Text style={styles.typeText}>{pokemon.tipo1}</Text>
-              </View>
+        <ScrollView
+          contentContainerStyle={[
+            styles.container,
+            { backgroundColor: colors.background },
+          ]}
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={[styles.hero, { backgroundColor: mainColor }]}>
+            <View>
+              <Text style={styles.eyebrow}>Pokedex App</Text>
+              <Text style={styles.title}>Pokédex</Text>
             </View>
 
-            <TouchableOpacity activeOpacity={0.85} onPress={animatePokemon}>
-              <View style={styles.imageFrame}>
-                <Animated.Image
-                  source={{ uri: pokemon.gif || pokemon.imagem }}
-                  style={[styles.image, { transform: [{ translateX: anim }] }]}
-                  resizeMode="contain"
-                />
-              </View>
+            <TouchableOpacity
+              style={styles.collectionButton}
+              onPress={() => navigation.navigate("Lista")}
+            >
+              <Text style={styles.collectionButtonText}>Coleção</Text>
             </TouchableOpacity>
-
-            <View style={styles.infoGrid}>
-              <View style={styles.infoBox}>
-                <Text style={styles.infoLabel}>Geração</Text>
-                <Text style={styles.infoValue}>{pokemon.geracao}</Text>
-              </View>
-
-              <View style={styles.infoBox}>
-                <Text style={styles.infoLabel}>Região</Text>
-                <Text style={styles.infoValue}>{pokemon.regiao}</Text>
-              </View>
-
-              <View style={styles.infoBox}>
-                <Text style={styles.infoLabel}>Categoria</Text>
-                <Text style={styles.infoValue}>{pokemon.categoria}</Text>
-              </View>
-
-              <View style={styles.infoBox}>
-                <Text style={styles.infoLabel}>Tipo 2</Text>
-                <Text style={styles.infoValue}>{pokemon.tipo2 || "Nenhum"}</Text>
-              </View>
-            </View>
-
-            <Text style={styles.description}>{pokemon.descricao}</Text>
-
-            <View style={styles.actions}>
-              <TouchableOpacity style={styles.soundButton} onPress={playSound}>
-                <Text style={styles.buttonText}>Som</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.primaryButton, { backgroundColor: mainColor }]}
-                onPress={goToCadastro}
-              >
-                <Text style={styles.buttonText}>Cadastrar</Text>
-              </TouchableOpacity>
-            </View>
           </View>
-        )}
 
-        {!!errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
+          <View style={styles.searchArea}>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.input,
+                  borderColor: colors.border,
+                  color: colors.text,
+                },
+              ]}
+              placeholder="Nome ou ID do Pokémon"
+              placeholderTextColor={colors.muted}
+              value={search}
+              onChangeText={setSearch}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardAppearance={isDark ? "dark" : "light"}
+              returnKeyType="search"
+              onSubmitEditing={() => fetchPokemon(search)}
+            />
 
-        <StatusBar style="dark" />
-      </ScrollView>
+            <TouchableOpacity
+              onPress={() => fetchPokemon(search)}
+              style={styles.searchButton}
+            >
+              <Text style={styles.buttonText}>Buscar</Text>
+            </TouchableOpacity>
+          </View>
+
+          {loading && (
+            <View
+              style={[styles.loadingCard, { backgroundColor: colors.surface }]}
+            >
+              <ActivityIndicator color={mainColor} size="large" />
+              <Text style={[styles.loadingText, { color: colors.muted }]}>
+                Carregando Pokémon...
+              </Text>
+            </View>
+          )}
+
+          {pokemon && (
+            <View style={[styles.card, { backgroundColor: colors.surface }]}>
+              <View style={styles.cardHeader}>
+                <View>
+                  <Text style={[styles.name, { color: colors.text }]}>
+                    {pokemon.nome}
+                  </Text>
+                  <Text style={[styles.number, { color: colors.muted }]}>
+                    #{pokemon.id}
+                  </Text>
+                </View>
+
+                <View
+                  style={[styles.typeBadge, { backgroundColor: mainColor }]}
+                >
+                  <Text style={styles.typeText}>{pokemon.tipo1}</Text>
+                </View>
+              </View>
+
+              <TouchableOpacity activeOpacity={0.85} onPress={animatePokemon}>
+                <View
+                  style={[
+                    styles.imageFrame,
+                    { backgroundColor: colors.surfaceMuted },
+                  ]}
+                >
+                  <Animated.Image
+                    source={{ uri: pokemon.gif || pokemon.imagem }}
+                    style={[
+                      styles.image,
+                      { transform: [{ translateX: anim }] },
+                    ]}
+                    resizeMode="contain"
+                  />
+                </View>
+              </TouchableOpacity>
+
+              <View style={styles.infoGrid}>
+                <View
+                  style={[
+                    styles.infoBox,
+                    {
+                      backgroundColor: colors.surfaceMuted,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.infoLabel, { color: colors.muted }]}>
+                    Geração
+                  </Text>
+                  <Text style={[styles.infoValue, { color: colors.text }]}>
+                    {pokemon.geracao}
+                  </Text>
+                </View>
+
+                <View
+                  style={[
+                    styles.infoBox,
+                    {
+                      backgroundColor: colors.surfaceMuted,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.infoLabel, { color: colors.muted }]}>
+                    Região
+                  </Text>
+                  <Text style={[styles.infoValue, { color: colors.text }]}>
+                    {pokemon.regiao}
+                  </Text>
+                </View>
+
+                <View
+                  style={[
+                    styles.infoBox,
+                    {
+                      backgroundColor: colors.surfaceMuted,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.infoLabel, { color: colors.muted }]}>
+                    Categoria
+                  </Text>
+                  <Text style={[styles.infoValue, { color: colors.text }]}>
+                    {pokemon.categoria}
+                  </Text>
+                </View>
+
+                <View
+                  style={[
+                    styles.infoBox,
+                    {
+                      backgroundColor: colors.surfaceMuted,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.infoLabel, { color: colors.muted }]}>
+                    Tipo 2
+                  </Text>
+                  <Text style={[styles.infoValue, { color: colors.text }]}>
+                    {pokemon.tipo2 || "Nenhum"}
+                  </Text>
+                </View>
+              </View>
+
+              <Text style={[styles.description, { color: colors.body }]}>
+                {pokemon.descricao}
+              </Text>
+
+              <View style={styles.actions}>
+                <TouchableOpacity style={styles.soundButton} onPress={playSound}>
+                  <Text style={styles.buttonText}>Som</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.primaryButton, { backgroundColor: mainColor }]}
+                  onPress={goToCadastro}
+                >
+                  <Text style={styles.buttonText}>Cadastrar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {!!errorMessage && (
+            <Text
+              style={[
+                styles.error,
+                {
+                  backgroundColor: colors.dangerSoft,
+                  borderColor: colors.dangerBorder,
+                  color: colors.dangerText,
+                },
+              ]}
+            >
+              {errorMessage}
+            </Text>
+          )}
+
+          <StatusBar style={isDark ? "light" : "dark"} />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: "#f8fafc",
+    flex: 1,
+  },
+
+  keyboardArea: {
     flex: 1,
   },
 

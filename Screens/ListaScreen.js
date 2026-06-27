@@ -13,6 +13,7 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import PokemonCard from "../Components/PokemonCard";
+import { useAppTheme } from "../Context/AppThemeContext";
 import {
   deletePokemon,
   subscribePokemons,
@@ -20,6 +21,7 @@ import {
 } from "../Services/pokemonService";
 
 export default function ListaScreen({ navigation }) {
+  const { colors, isDark } = useAppTheme();
   const [pokemons, setPokemons] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -75,23 +77,36 @@ export default function ListaScreen({ navigation }) {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.centerContainer}>
+      <SafeAreaView
+        style={[styles.safeArea, { backgroundColor: colors.background }]}
+      >
+        <View
+          style={[
+            styles.centerContainer,
+            { backgroundColor: colors.background },
+          ]}
+        >
           <ActivityIndicator color="#dc2626" size="large" />
-          <Text style={styles.loadingText}>Carregando coleção...</Text>
+          <Text style={[styles.loadingText, { color: colors.muted }]}>
+            Carregando coleção...
+          </Text>
         </View>
-        <StatusBar style="dark" />
+        <StatusBar style={isDark ? "light" : "dark"} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.eyebrow}>Pokémons salvos</Text>
-            <Text style={styles.title}>Minha Coleção</Text>
+            <Text style={[styles.title, { color: colors.text }]}>
+              Minha Coleção
+            </Text>
           </View>
 
           <View style={styles.counter}>
@@ -113,9 +128,16 @@ export default function ListaScreen({ navigation }) {
             />
           )}
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyTitle}>Sua coleção está vazia</Text>
-              <Text style={styles.emptyText}>
+            <View
+              style={[
+                styles.emptyContainer,
+                { backgroundColor: colors.surface },
+              ]}
+            >
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>
+                Sua coleção está vazia
+              </Text>
+              <Text style={[styles.emptyText, { color: colors.body }]}>
                 Busque um Pokémon na Pokédex e cadastre para vê-lo aqui.
               </Text>
 
@@ -129,26 +151,23 @@ export default function ListaScreen({ navigation }) {
           }
         />
       </View>
-      <StatusBar style="dark" />
+      <StatusBar style={isDark ? "light" : "dark"} />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: "#f8fafc",
     flex: 1,
   },
 
   container: {
-    backgroundColor: "#f8fafc",
     flex: 1,
     padding: 18,
   },
 
   centerContainer: {
     alignItems: "center",
-    backgroundColor: "#f8fafc",
     flex: 1,
     justifyContent: "center",
   },

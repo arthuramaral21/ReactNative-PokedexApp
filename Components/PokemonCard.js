@@ -8,7 +8,10 @@ import {
   View,
 } from "react-native";
 
+import { useAppTheme } from "../Context/AppThemeContext";
+
 export default function PokemonCard({ pokemon, onUpdate, onDelete }) {
+  const { colors, isDark } = useAppTheme();
   const [isEditing, setIsEditing] = useState(false);
   const [newNickname, setNewNickname] = useState(pokemon.apelido || "");
 
@@ -23,8 +26,10 @@ export default function PokemonCard({ pokemon, onUpdate, onDelete }) {
   };
 
   return (
-    <View style={styles.card}>
-      <View style={styles.imageFrame}>
+    <View style={[styles.card, { backgroundColor: colors.surface }]}>
+      <View
+        style={[styles.imageFrame, { backgroundColor: colors.surfaceMuted }]}
+      >
         <Image
           source={{ uri: pokemon.imagem }}
           style={styles.image}
@@ -34,8 +39,12 @@ export default function PokemonCard({ pokemon, onUpdate, onDelete }) {
 
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.name}>{pokemon.nome}</Text>
-          <Text style={styles.number}>#{pokemon.pokemonId}</Text>
+          <Text style={[styles.name, { color: colors.text }]}>
+            {pokemon.nome}
+          </Text>
+          <Text style={[styles.number, { color: colors.muted }]}>
+            #{pokemon.pokemonId}
+          </Text>
         </View>
 
         <View style={styles.metaRow}>
@@ -46,14 +55,22 @@ export default function PokemonCard({ pokemon, onUpdate, onDelete }) {
 
         {isEditing ? (
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.input,
+                borderColor: colors.border,
+                color: colors.text,
+              },
+            ]}
             value={newNickname}
             onChangeText={setNewNickname}
             placeholder="Novo apelido"
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={colors.muted}
+            keyboardAppearance={isDark ? "dark" : "light"}
           />
         ) : (
-          <Text style={styles.nickname}>
+          <Text style={[styles.nickname, { color: colors.body }]}>
             Apelido: {pokemon.apelido || "Sem apelido"}
           </Text>
         )}

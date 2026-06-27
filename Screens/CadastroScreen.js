@@ -16,9 +16,11 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useAppTheme } from "../Context/AppThemeContext";
 import { createPokemon } from "../Services/pokemonService";
 
 export default function CadastroScreen({ route, navigation }) {
+  const { colors, isDark } = useAppTheme();
   const pokemon = route.params?.pokemon;
   const [apelido, setApelido] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,10 +47,14 @@ export default function CadastroScreen({ route, navigation }) {
 
   if (!pokemon) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView
+        style={[styles.safeArea, { backgroundColor: colors.background }]}
+      >
         <View style={styles.emptyContainer}>
-          <Text style={styles.title}>Nenhum Pokémon selecionado</Text>
-          <Text style={styles.description}>
+          <Text style={[styles.title, { color: colors.text }]}>
+            Nenhum Pokémon selecionado
+          </Text>
+          <Text style={[styles.description, { color: colors.body }]}>
             Volte para a Pokédex, escolha um Pokémon e toque em cadastrar.
           </Text>
 
@@ -59,29 +65,43 @@ export default function CadastroScreen({ route, navigation }) {
             <Text style={styles.buttonText}>Voltar para Pokédex</Text>
           </TouchableOpacity>
         </View>
-        <StatusBar style="dark" />
+        <StatusBar style={isDark ? "light" : "dark"} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={90}
         style={styles.keyboardArea}
       >
         <ScrollView
-          contentContainerStyle={styles.container}
+          contentContainerStyle={[
+            styles.container,
+            { backgroundColor: colors.background },
+          ]}
+          keyboardDismissMode="on-drag"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
             <Text style={styles.eyebrow}>Nova captura</Text>
-            <Text style={styles.title}>Cadastrar Pokémon</Text>
+            <Text style={[styles.title, { color: colors.text }]}>
+              Cadastrar Pokémon
+            </Text>
           </View>
 
-          <View style={styles.card}>
-            <View style={styles.imageFrame}>
+          <View style={[styles.card, { backgroundColor: colors.surface }]}>
+            <View
+              style={[
+                styles.imageFrame,
+                { backgroundColor: colors.surfaceMuted },
+              ]}
+            >
               <Image
                 source={{ uri: pokemon.imagem }}
                 style={styles.image}
@@ -89,7 +109,9 @@ export default function CadastroScreen({ route, navigation }) {
               />
             </View>
 
-            <Text style={styles.name}>{pokemon.nome}</Text>
+            <Text style={[styles.name, { color: colors.text }]}>
+              {pokemon.nome}
+            </Text>
 
             <View style={styles.metaRow}>
               <View style={styles.badge}>
@@ -103,13 +125,21 @@ export default function CadastroScreen({ route, navigation }) {
               </View>
             </View>
 
-            <Text style={styles.label}>Apelido</Text>
+            <Text style={[styles.label, { color: colors.body }]}>Apelido</Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.input,
+                  borderColor: colors.border,
+                  color: colors.text,
+                },
+              ]}
               placeholder="Ex: parceiro, campeão..."
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={colors.muted}
               value={apelido}
               onChangeText={setApelido}
+              keyboardAppearance={isDark ? "dark" : "light"}
             />
 
             <TouchableOpacity
@@ -125,7 +155,7 @@ export default function CadastroScreen({ route, navigation }) {
             </TouchableOpacity>
           </View>
 
-          <StatusBar style="dark" />
+          <StatusBar style={isDark ? "light" : "dark"} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -134,7 +164,6 @@ export default function CadastroScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: "#f8fafc",
     flex: 1,
   },
 
