@@ -39,3 +39,5 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+/home/arthuramaral/Projetos/Faculdade/ProgramaçãoMobile/OATpokedex/pokedex-main/pokedex/Services
